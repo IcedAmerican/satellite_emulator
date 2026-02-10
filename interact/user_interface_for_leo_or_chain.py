@@ -119,7 +119,7 @@ class UserInterfaceForLeoOrChain:
 
     def generate_certs_ymlconfig(self, full_path: str, consensus_protocol_type: int, p2p_port: int, rpc_port: int):
         self.my_logger.info("start to generate config of different nodes")
-        # full_path 为snc所在目录
+        # full_path 为 snc 所在目录；snc 使用本机硬编码工作区路径
         with wdmm.WorkDirManager(change_dir=full_path):
             full_command = f"./snc generate -c {consensus_protocol_type} -p {p2p_port} -r {rpc_port}"
             raem.RootAuthorityExecutor.execute(command=full_command)

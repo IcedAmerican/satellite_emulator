@@ -63,7 +63,7 @@ class FlaskVisualizer:
         return response_json_str, 200, headers
 
     def start_server(self):
-        http_server = WSGIServer(('10.134.148.77', 13000), FlaskVisualizer.app)
+        http_server = WSGIServer(('127.0.0.1', 13000), FlaskVisualizer.app)
         http_server.serve_forever()
 
 

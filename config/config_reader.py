@@ -1,4 +1,24 @@
+import os
 import yaml
+
+
+# 工作区根目录（本机硬编码，与 access_authentication 中一致）
+WORKSPACE_ROOT = "/home/fei/code"
+
+
+def _workspace_root(_configuration_file_path: str) -> str:
+    """工作区根目录：包含 access_authentication 和 satellite_emulator 的目录（本机硬编码）。"""
+    return WORKSPACE_ROOT
+
+
+def _resolve_path(workspace_root: str, value: str) -> str:
+    """若 value 不是绝对路径，则视为相对工作区根目录的路径。"""
+    if not value:
+        return value
+    value = value.strip()
+    if os.path.isabs(value):
+        return value
+    return os.path.normpath(os.path.join(workspace_root, value))
 
 
 class ConfigReader:
@@ -32,6 +52,8 @@ class ConfigReader:
         self.abs_of_existed_chainmaker_config = None
         # resources/constellation_config.yml
         self.abs_of_constellation_config = None
+        # 工作区根目录（本机硬编码）
+        self.workspace_root = None
         self.abs_of_links_generator = None
 
         self.abs_of_frr_configuration = None
@@ -62,6 +84,8 @@ class ConfigReader:
         with open(file=configuration_file_path, mode='r', encoding="utf-8") as f:
             selected_config_data = yaml.load(stream=f, Loader=yaml.FullLoader).get(selected_config, None)
         if selected_config_data is not None:
+            workspace = _workspace_root(configuration_file_path)
+            self.workspace_root = workspace
             self.num_of_orbit = int(selected_config_data.get("num_of_orbit", None))
             self.sat_per_orbit = int(selected_config_data.get("sat_per_orbit", None))
             self.consensus_group_row = int(selected_config_data.get("consensus_group_row", None))
@@ -79,16 +103,16 @@ class ConfigReader:
             # self.docker_cpu_limit = int(selected_config_data.get("docker_cpu_limit", None))
             self.access_image_name = selected_config_data.get("access_image_name", None)
 
-            self.abs_of_node_config_generator = selected_config_data.get("abs_of_node_config_generator", None)
-            self.abs_of_multi_node = selected_config_data.get("abs_of_multi_node", None)
+            self.abs_of_node_config_generator = _resolve_path(workspace, selected_config_data.get("abs_of_node_config_generator", None) or "")
+            self.abs_of_multi_node = _resolve_path(workspace, selected_config_data.get("abs_of_multi_node", None) or "")
 
-            self.abs_of_existed_chainmaker_config = selected_config_data.get("abs_of_existed_nodes_config", None)
-            self.abs_of_constellation_config = selected_config_data.get("abs_of_constellation_config", None)
-            self.abs_of_links_generator = selected_config_data.get("abs_of_links_generator", None)
+            self.abs_of_existed_chainmaker_config = _resolve_path(workspace, selected_config_data.get("abs_of_existed_nodes_config", None) or "")
+            self.abs_of_constellation_config = _resolve_path(workspace, selected_config_data.get("abs_of_constellation_config", None) or "")
+            self.abs_of_links_generator = _resolve_path(workspace, selected_config_data.get("abs_of_links_generator", None) or "")
 
-            self.abs_of_frr_configuration = selected_config_data.get("abs_of_frr_configuration", None)
-            self.abs_of_routes_configuration = selected_config_data.get("abs_of_routes_configuration", None)
-            self.abs_of_address_configuration = selected_config_data.get("abs_of_address_configuration", None)
+            self.abs_of_frr_configuration = _resolve_path(workspace, selected_config_data.get("abs_of_frr_configuration", None) or "")
+            self.abs_of_routes_configuration = _resolve_path(workspace, selected_config_data.get("abs_of_routes_configuration", None) or "")
+            self.abs_of_address_configuration = _resolve_path(workspace, selected_config_data.get("abs_of_address_configuration", None) or "")
 
             self.p2p_port = int(selected_config_data.get("p2p_port", None))
             self.rpc_port = int(selected_config_data.get("rpc_port", None))

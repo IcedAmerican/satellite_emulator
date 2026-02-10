@@ -26,9 +26,13 @@ class DockerAsyncSocket:
         final_url = f"{self.url}/containers/create?name={url_parameters['name']}"
         async with aiohttp.ClientSession() as session:
             async with session.post(final_url, json=body_parameters, headers=self.headers) as response:
-                response_data = await response.json()
+                try:
+                    response_data = await response.json()
+                except Exception:
+                    response_data = {}
                 if response.status != 201:
-                    logger.error("create container failed!")
+                    msg = response_data.get("message", response_data) if isinstance(response_data, dict) else response_data
+                    logger.error("create container failed! status={} url={} message={}", response.status, final_url, msg)
                 else:
                     return response_data["Id"]
 

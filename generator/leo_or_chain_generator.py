@@ -1,3 +1,4 @@
+import os
 import multiprocessing
 import time
 import asyncio
@@ -103,8 +104,17 @@ class LeoOrChainGenerator:
                 generate_destination=self.config_reader.abs_of_routes_configuration,
                 node_type=self.container_prefix)
             if self.container_prefix == "consensus_node":
+                multi_node_config = f"{self.config_reader.abs_of_multi_node}/config"
+                first_chainmaker = f"{multi_node_config}/node1/chainmaker.yml"
+                if not os.path.isfile(first_chainmaker):
+                    raise FileNotFoundError(
+                        f"节点配置未生成: 不存在 {first_chainmaker}\n"
+                        "请在前一步选择「是否重新生成链的配置文件」时选 yes，并确保 snc generate 执行成功（无报错）。\n"
+                        "若仍失败，请到 access_authentication/config/tools/configutils 目录下手动执行:\n"
+                        "  ./snc generate -c <共识类型> -p <p2p端口> -r <rpc端口>"
+                    )
                 self.logical_constellation.modify_nodes_chainmaker_yml(
-                    path_of_multi_node_config=f"{self.config_reader.abs_of_multi_node}/config")
+                    path_of_multi_node_config=multi_node_config)
             self.my_logger.info("Sat certs and ymlConfigs are modified!")
             # 进行ip地址的留存
             self.logical_constellation.generate_id_to_addresses_mapping(

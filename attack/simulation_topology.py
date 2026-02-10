@@ -674,7 +674,7 @@ router ospf
         :param current_data_rate: 当前的数据传输速率
         :return:
         """
-        url = "http://10.134.148.77:13000/data_add"
+        url = "http://127.0.0.1:13000/data_add"
         headers = {
             "Content-Type": "application/json"
         }

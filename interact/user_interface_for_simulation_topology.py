@@ -123,7 +123,7 @@ class UserInterfaceForSimulationTopology:
         :return:
         """
         with wdmm.WorkDirManager(change_dir=self.config_reader.abs_of_multi_node):
-            ip_address = "10.134.148.77"
+            ip_address = "127.0.0.1"
             os.system(f"""sed -i "s%127.0.0.1%{ip_address}%g" config/node*/chainmaker.yml""")
 
     def get_user_choice(self):
