@@ -232,6 +232,9 @@ class LeoOrChainGenerator:
             await pbm.ProgressBar.wait_tasks_with_tqdm(tasks, description="create chain process")
             for single_task in tasks:
                 cm_node_container_id = single_task.result()
+                if cm_node_container_id is None:
+                    self.my_logger.error("create chain process: one or more containers failed to create, skip start.")
+                    continue
                 self.containers[cm_node_container_id] = cim.ContainerInformation(cm_node_container_id)
             # 当创建完成之后，切换状态
             # 接着进行逻辑星座的生成, 生成是逻辑的一个拓扑，现在要进行物理的连接

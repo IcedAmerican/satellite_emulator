@@ -1,3 +1,4 @@
+import json
 from enum import Enum
 import aiohttp
 from loguru import logger
@@ -33,8 +34,8 @@ class DockerAsyncSocket:
                 if response.status != 201:
                     msg = response_data.get("message", response_data) if isinstance(response_data, dict) else response_data
                     logger.error("create container failed! status={} url={} message={}", response.status, final_url, msg)
-                else:
-                    return response_data["Id"]
+                    return None
+                return response_data["Id"]
 
     async def stop_container(self, container_id):
         """
@@ -52,16 +53,25 @@ class DockerAsyncSocket:
 
     async def start_container(self, container_id):
         """
-        调用 docker engine 原生接口进行容器的启动，并获取响应，判断操作是否成功
+        调用 docker engine 原生接口进行容器的启动，并获取响应，判断操作是否成功。
+        204=启动成功，304=容器已在运行（视为成功）。
         :param container_id: 容器的id
         :return: None
         """
         final_url = f"{self.url}/containers/{container_id}/start"
         async with aiohttp.ClientSession() as session:
             async with session.post(final_url) as response:
-                await response.text()
-                if response.status != 204:
-                    logger.error("start container failed!")
+                body = await response.text()
+                if response.status not in (204, 304):
+                    try:
+                        msg = json.loads(body) if body else {}
+                        err = msg.get("message", msg) if isinstance(msg, dict) else body
+                    except Exception:
+                        err = body
+                    logger.error(
+                        "start container failed! status={} container_id={} message={}",
+                        response.status, container_id, err,
+                    )
 
     async def delete_container(self, container_id):
         """

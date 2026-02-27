@@ -65,7 +65,8 @@ def str_checksum(line: str) -> int:
     return sum_num % 10
 
 
-def generate_tle(orbit_num: int, sats_per_orbit: int, latitude, longitude, delta, period) -> (list, dict):
+def generate_tle(orbit_num: int, sats_per_orbit: int, latitude, longitude, delta, period,
+                 high_perf_ratio: float = 0.3, low_perf_capacity: float = 0.3) -> (list, dict):
     satellites = []
     position_datas = {}
     satellite_name_base = "node_"
@@ -75,6 +76,8 @@ def generate_tle(orbit_num: int, sats_per_orbit: int, latitude, longitude, delta
     line_1 = "1 00000U 23666A   %02d%012.8f  .00000000  00000-0 00000000 0 0000"
     line_2 = "2 00000  90.0000 %08.4f 0000011   0.0000 %8.4f %11.8f00000"
     year2, day = get_year_day(datetime.now())
+    total_sats = orbit_num * sats_per_orbit
+    high_perf_count = max(1, int(total_sats * high_perf_ratio))
 
     # 对每条轨道
     for i in range(orbit_num):
@@ -82,12 +85,16 @@ def generate_tle(orbit_num: int, sats_per_orbit: int, latitude, longitude, delta
         start_longitude = longitude + 180 * i / orbit_num  # longitude 经度
         # 单轨卫星
         for j in range(sats_per_orbit):
+            node_idx = len(satellites)
+            # 算力异构：30% 高性能 1.0，70% 低性能 low_perf_capacity；确定性分配 (node_id % 10 < 3)
+            compute_capacity = 1.0 if (node_idx % 10) < 3 else low_perf_capacity
             # 位置信息表
-            node_id_str = "node_" + str(len(satellites))
+            node_id_str = "node_" + str(node_idx)
             position_datas[node_id_str] = {
                 cv.LATITUDE_KEY: 0.0,
                 cv.LONGITUDE_KEY: 0.0,
-                cv.HEIGHT_KEY: 0.0
+                cv.HEIGHT_KEY: 0.0,
+                "compute_capacity": compute_capacity,
             }
             this_latitude = start_latitude + 360 * j / sats_per_orbit
             this_line_1 = line_1 % (year2, day)

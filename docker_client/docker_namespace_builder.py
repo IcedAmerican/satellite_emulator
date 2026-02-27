@@ -15,5 +15,5 @@ class DockerNamespaceBuilder:
         for pid in pid_list:
             source_file = f"/proc/{pid}/ns/net"  # 这是要用来产生软链接的源文件
             dest_file = f"/var/run/netns/{pid}"  # 这是生成的软链接
-            full_command = f"sudo ln -s {source_file} {dest_file}"
+            full_command = f"sudo ln -sf {source_file} {dest_file}"
             raem.RootAuthorityExecutor.execute(command=full_command)

@@ -1,15 +1,15 @@
 default:
   num_of_orbit: 4
-  sat_per_orbit: 4
-  consensus_group_col: 1  # 共识组轨道数
-  consensus_group_row: 4 # 共识组单轨卫星数
+  sat_per_orbit: 10  
+  consensus_group_col: 1 # 共识组轨道数
+  consensus_group_row: 10 # 共识组单轨卫星数
   # 0:PBFT 1:H-PBFT 2:T-PBFT
-  consensus_protocol_type: 2
+  consensus_protocol_type: 0
   max_generated_subnet: 1000
   base_network_address: 192.168.0.0/16
   satellite_image_name: satellite-node
   ground_image_name: ground_station
-  number_of_satellites: 400
+  number_of_satellites: 40
   base_url: http://127.0.0.1:2375
   listening_port: 30000
 #  docker_cpu_limit: 5
@@ -54,3 +54,14 @@ default:
   signal_port: 13301
   topology_cn_node: 9
   generate_leo_or_chain: chain
+
+  # SAA (South Atlantic Anomaly) region config
+  saa_enabled: false
+  saa_lat_range: [-50, 0]
+  saa_lon_range: [-80, 20]
+  saa_loss: "2%"
+  saa_bandwidth: "1Mbps"
+
+  # Compute heterogeneity (30% high perf / 70% low perf)
+  high_perf_ratio: 0.3
+  low_perf_capacity: 0.3

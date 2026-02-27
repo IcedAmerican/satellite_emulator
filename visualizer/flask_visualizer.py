@@ -1,9 +1,13 @@
 import json
 import collections
+import os
 import time
 from flask import Flask, request
 from gevent.pywsgi import WSGIServer
 from flask_cors import *
+
+# Shared status file path (position_broadcast writes, flask reads)
+SATELLITE_STATUS_FILE = "/tmp/satellite_emulator_status.json"
 
 
 class FlaskVisualizer:
@@ -51,6 +55,22 @@ class FlaskVisualizer:
         return response_json_str, 200, headers
 
     @staticmethod
+    @app.route("/satellite_status", methods=["GET"])
+    def satellite_status():
+        """GET /satellite_status - returns satellite nodes status for accessauth/PA-PBFT."""
+        try:
+            if not os.path.exists(SATELLITE_STATUS_FILE):
+                return json.dumps({"nodes": []}), 200, {"Content-Type": "application/json"}
+            with open(SATELLITE_STATUS_FILE) as f:
+                data = json.load(f)
+            nodes = data.get("nodes", [])
+            if not nodes:
+                return json.dumps({"nodes": []}), 200, {"Content-Type": "application/json"}
+            return json.dumps({"nodes": nodes}), 200, {"Content-Type": "application/json"}
+        except Exception:
+            return json.dumps({"nodes": []}), 503, {"Content-Type": "application/json"}
+
+    @staticmethod
     @app.route("/data_get", methods=["GET"])
     def get_data():
         # 获取的总是长度为100的队列
@@ -63,7 +83,7 @@ class FlaskVisualizer:
         return response_json_str, 200, headers
 
     def start_server(self):
-        http_server = WSGIServer(('127.0.0.1', 13000), FlaskVisualizer.app)
+        http_server = WSGIServer(('0.0.0.0', 13000), FlaskVisualizer.app)
         http_server.serve_forever()
 
 
